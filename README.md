@@ -1,8 +1,38 @@
 # Repo Bugbot
 
-Local-first PR review intelligence for teams that ship in large, messy repositories.
+Free, local, Cursor-style Bugbot for Codex and Claude Code.
 
-Repo Bugbot turns a pull request into a **blast-radius map**. It does not only read the changed files. It builds a local SQLite graph of the repository, walks the relationships around the diff, classifies production risk, and generates focused review prompts for humans or coding agents.
+Repo Bugbot turns a pull request into a **blast-radius map**. It does not only read the changed files. It builds a local SQLite graph of the repository, walks the relationships around the diff, classifies production risk, and generates focused review prompts for Codex, Claude Code, humans, or any other coding agent.
+
+Think of it as a free local alternative to the kind of Bugbot workflow people want in Cursor, but designed to run against your own repo and hand structured review context to Codex or Claude Code.
+
+Repo Bugbot is not affiliated with Cursor. "Cursor-style" is descriptive: PR diff in, blast-radius-aware review context out.
+
+## Built For Codex And Claude Code
+
+Repo Bugbot is not trying to replace your coding agent. It gives the agent better context.
+
+Use it when you want Codex or Claude Code to review a PR with repository relationship context:
+
+```bash
+repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
+repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
+```
+
+Then ask your agent:
+
+```text
+Audit this PR like a strict Bugbot pass.
+
+Read:
+- git diff origin/master...HEAD
+- .repo-bugbot/impact.md
+
+Only report material bugs. Focus on security, billing, worker retries, CRM writes,
+route/env mismatches, unreachable UI, and missing tests for risky behavior.
+```
+
+Codex is strong for applying fixes and running the local gate. Claude Code is strong for long-form code review and reasoning across large contexts. Repo Bugbot gives either one a ranked map of what the PR might break.
 
 ## The Problem
 
@@ -98,6 +128,37 @@ The markdown report includes:
 - changed env vars, route strings, and symbols
 - focused agent prompts
 
+## Use With Codex
+
+Run Repo Bugbot, then paste or reference `.repo-bugbot/impact.md` in Codex:
+
+```text
+Use .repo-bugbot/impact.md and git diff origin/master...HEAD.
+Review this PR like Bugbot. Return only material findings with file and line.
+If a fix is straightforward, patch it and run the relevant tests.
+```
+
+Suggested Codex workflow:
+
+1. Build graph.
+2. Generate impact report.
+3. Ask Codex for findings.
+4. Ask Codex to patch confirmed findings.
+5. Run the repo's pre-push gate.
+
+## Use With Claude Code
+
+Run Repo Bugbot, then ask Claude Code:
+
+```text
+Read .repo-bugbot/impact.md and git diff origin/master...HEAD.
+Act as a strict production code reviewer.
+Prioritize bugs caused by impacted routes, env vars, workers, tests, and external writes.
+Do not list style issues.
+```
+
+Claude Code can use the report as a review brief instead of starting from a raw diff.
+
 ## Local SQLite Graph
 
 The graph database is local and disposable:
@@ -160,7 +221,7 @@ repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
 repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
 ```
 
-Then give `.repo-bugbot/impact.md` to three reviewers or agents:
+Then give `.repo-bugbot/impact.md` to Codex, Claude Code, or three focused reviewers:
 
 1. Security, billing, config
 2. Runtime, workers, integrations
@@ -170,17 +231,17 @@ Each reviewer should return only material issues with file and line references.
 
 ## SaaS Tier Roadmap
 
-Repo Bugbot is currently local-first private beta software. The hosted SaaS roadmap is:
+Repo Bugbot is currently a free local private beta. The hosted SaaS roadmap is:
 
 ### Local
 
-For individual developers and private beta testers.
+Free for individual developers and private beta testers.
 
 - local SQLite graph
 - local impact reports
 - local Git hook refresh
 - no code leaves your machine
-- agent prompt generation
+- Codex and Claude Code prompt generation
 
 ### Pro
 
@@ -189,7 +250,7 @@ For solo builders and small teams.
 - GitHub PR comment bot
 - saved impact reports per PR
 - risk badges on pull requests
-- review prompt export for Codex, Claude, Cursor, or internal agents
+- review prompt export for Codex, Claude Code, Cursor-style workflows, or internal agents
 - configurable base branches
 
 ### Team
@@ -231,4 +292,4 @@ Do not commit `.repo-bugbot/` artifacts unless your team explicitly wants to sto
 
 Private beta.
 
-This repo is intentionally private while the framework, docs, and product workflow harden. Before making it public, add a public license, CI, packaged releases, and sanitized example reports.
+This repo is intentionally private while the framework, docs, and product workflow harden. Before making it public, add a public license, CI, packaged releases, sanitized example reports, and a clear public disclaimer that this is an independent Cursor-style tool rather than an official Cursor product.

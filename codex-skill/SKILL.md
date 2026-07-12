@@ -1,13 +1,15 @@
 ---
 name: repo-bugbot
-description: Local Bugbot-style PR audit workflow. Use when auditing pull requests, checking merge risk, computing blast radius, or asking multiple agents to review code changes with repository relationship context.
+description: Free local Cursor-style Bugbot workflow for Codex and Claude Code. Use when auditing pull requests, checking merge risk, computing blast radius, or asking agents to review code changes with repository relationship context.
 ---
 
 # Repo Bugbot
 
 ## Goal
 
-Run a local, repeatable Bugbot-style review before merging PRs. The workflow combines deterministic repository graph indexing with high-effort agent review so reviewers inspect not just changed files, but also likely affected callers, routes, tests, configs, workers, prompts, and public client surfaces.
+Run a free local Cursor-style Bugbot review before merging PRs. The workflow combines deterministic repository graph indexing with Codex, Claude Code, or high-effort agent review so reviewers inspect not just changed files, but also likely affected callers, routes, tests, configs, workers, prompts, and public client surfaces.
+
+Repo Bugbot is independent and not affiliated with Cursor. The point is to give Codex and Claude Code the missing blast-radius context that a raw diff does not provide.
 
 ## Workflow
 
@@ -30,6 +32,17 @@ repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master 
    - runtime/data/integrations
    - frontend reachability/UX
 6. Merge only after material findings are fixed or explicitly accepted and the repo's production gate passes.
+
+## Codex / Claude Code Prompt
+
+```text
+Use .repo-bugbot/impact.md and git diff origin/master...HEAD.
+Review this PR like a strict Bugbot pass for Codex or Claude Code.
+Return only material findings with file and line references.
+Prioritize security, billing, worker retries, CRM writes, route/env mismatches,
+unreachable UI, and missing tests for risky behavior.
+Do not report style-only issues.
+```
 
 ## Review Prompt Template
 

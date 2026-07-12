@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "repo-bugbot"
 version = "0.1.0"
-description = "Local-first PR blast-radius auditor for large codebases."
+description = "Free local Cursor-style Bugbot for Codex and Claude Code."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
   { name = "LegalVoice" }
 ]
-keywords = ["code-review", "pull-requests", "repository-graph", "static-analysis", "ai-agents"]
+keywords = ["code-review", "pull-requests", "repository-graph", "static-analysis", "ai-agents", "codex", "claude-code", "bugbot"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",

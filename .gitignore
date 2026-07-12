@@ -1,0 +1,11 @@
+.DS_Store
+.repo-bugbot/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite-*
+dist/
+build/
+*.egg-info/

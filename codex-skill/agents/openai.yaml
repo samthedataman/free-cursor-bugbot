@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Bugbot"
+  short_description: "Index repo relationships and run high-impact PR audits."
+  default_prompt: "Audit the current PR with repo-bugbot: build or refresh the graph, compute diff impact, spawn focused review agents, and report only material findings."

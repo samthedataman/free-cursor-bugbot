@@ -18,7 +18,7 @@ Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style"
 Clone the tool once:
 
 ```bash
-git clone https://github.com/samthedataman/free-cursor-bugbot.git
+git clone https://github.com/<owner>/free-cursor-bugbot.git
 ```
 
 Then go to the app repo you want to review:
@@ -156,15 +156,15 @@ AdminPanel.tsx
   imports -> adminApi.ts
 
 adminApi.ts
-  calls -> /api/v1/admin/newsletter/operations
+  calls -> /api/admin/reports
 
 admin_router.py
-  registers -> GET /api/v1/admin/newsletter/operations
-  uses env -> RENDER_API_KEY
+  registers -> GET /api/admin/reports
+  uses env -> SERVICE_API_KEY
 
 render.yaml
-  declares service -> legalvoice-api
-  declares env -> RENDER_API_KEY
+  declares service -> app-api
+  declares env -> SERVICE_API_KEY
 ```
 
 ### 2. Generate The PR Impact Report
@@ -204,22 +204,20 @@ changed: admin_router.py
 also inspect: AdminPanel.tsx
 also inspect: adminApi.ts
 also inspect: render.yaml
-also inspect: RENDER_API_KEY
+also inspect: SERVICE_API_KEY
 also inspect: tests touching admin routes
 risk: route/auth/config boundary
 ```
 
 That is the difference.
 
-## Install
-
-Private beta install:
+## Install From GitHub
 
 ```bash
-python3 -m pip install git+https://github.com/samthedataman/free-cursor-bugbot.git
+python3 -m pip install git+https://github.com/<owner>/free-cursor-bugbot.git
 ```
 
-When the repo becomes public, this will be installable without private GitHub access.
+Replace `<owner>` with the GitHub owner or organization where this repo is hosted.
 
 ## Use With Codex
 
@@ -312,13 +310,11 @@ But the core idea is simple: if you already pay for Codex or Claude Code, you sh
 
 ## Status
 
-Private beta.
+Public alpha.
 
-Before public release, this needs:
+Still needed:
 
-- a public license
 - CI
 - better examples
 - package releases
 - more language/framework detection
-- clear trademark disclaimer

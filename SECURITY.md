@@ -8,7 +8,7 @@ Do not publish generated `.repo-bugbot/` artifacts from private repositories unl
 
 ## Reporting Issues
 
-While this project is private beta, report security issues directly to the repository owner.
+Report security issues through GitHub's private vulnerability reporting if it is enabled for the repository. Otherwise, open a minimal issue asking for a private disclosure channel.
 
 ## Design Principles
 

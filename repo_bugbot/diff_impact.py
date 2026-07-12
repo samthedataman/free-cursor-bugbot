@@ -14,7 +14,7 @@ from typing import Any
 
 RISK_RULES = [
     ("critical", re.compile(r"(stripe|billing|checkout|subscription|trial|twilio|provision|phone)", re.I), "billing/provisioning"),
-    ("critical", re.compile(r"(crm|filevine|smartadvocate|writeback|append|note|timeline)", re.I), "external CRM write"),
+    ("critical", re.compile(r"(crm|case[-_ ]?management|writeback|append|note|timeline)", re.I), "external CRM write"),
     ("high", re.compile(r"(render\.yaml|\.env|VITE_|SECRET|TOKEN|API_KEY|WEBHOOK)", re.I), "config/env boundary"),
     ("high", re.compile(r"(worker|queue|retry|idempot|dispatch|campaign|outbound)", re.I), "worker/campaign runtime"),
     ("high", re.compile(r"(router|route|webhook|callback|auth|onboarding)", re.I), "route/auth/onboarding"),

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Repo Bugbot"
+  display_name: "Free Cursor Bugbot"
   short_description: "Index repo relationships and run high-impact PR audits."
-  default_prompt: "Audit the current PR with repo-bugbot: build or refresh the graph, compute diff impact, spawn focused review agents, and report only material findings."
+  default_prompt: "Audit the current PR with free-cursor-bugbot: build or refresh the graph, compute diff impact, generate focused review lanes, and report only material findings."

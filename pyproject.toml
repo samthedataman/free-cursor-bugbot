@@ -3,13 +3,13 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "repo-bugbot"
+name = "free-cursor-bugbot"
 version = "0.1.0"
 description = "Free local Cursor-style Bugbot for Codex and Claude Code."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-  { name = "LegalVoice" }
+  { name = "Free Cursor Bugbot Contributors" }
 ]
 keywords = ["code-review", "pull-requests", "repository-graph", "static-analysis", "ai-agents", "codex", "claude-code", "bugbot"]
 classifiers = [

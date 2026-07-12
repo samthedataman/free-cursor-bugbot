@@ -1,17 +1,31 @@
-# Repo Bugbot
+# Free Cursor Bugbot
 
 A free local Bugbot-style reviewer for Codex and Claude Code.
 
-Repo Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
+Free Cursor Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
 
-Instead of paying for another review bot, Repo Bugbot gives your existing agent the missing context:
+Instead of paying for another review bot, Free Cursor Bugbot gives your existing agent the missing context:
 
 - what changed
 - what routes, env vars, tests, workers, and services are connected to it
 - what production risks the PR touches
 - what the agent should review first
 
-Repo Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
+Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
+
+```mermaid
+flowchart LR
+    PR["Pull Request diff"] --> Index["Build local repo graph"]
+    Repo["Your repo files"] --> Index
+    Index --> DB[("SQLite graph<br/>.repo-bugbot/graph.sqlite")]
+    DB --> Impact["Impact report<br/>.repo-bugbot/impact.md"]
+    PR --> Impact
+    Impact --> Codex["Codex review"]
+    Impact --> Claude["Claude Code review"]
+    Codex --> Findings["Material bugs<br/>with file + line"]
+    Claude --> Findings
+    Findings --> Fix["Patch, test, merge"]
+```
 
 ## What Cursor Bugbot Does
 
@@ -26,7 +40,7 @@ The workflow is more like:
 
 That is the right idea. The problem is that many teams already pay for strong agents that can do the review if they are given the right context.
 
-## Why Repo Bugbot Exists
+## Why Free Cursor Bugbot Exists
 
 Codex and Claude Code are already good at code review.
 
@@ -39,7 +53,7 @@ What they usually lack is a clean map of the repository:
 - which Render service owns a config variable
 - which public UI is actually mounted
 
-Repo Bugbot builds that map locally and gives it to the agent.
+Free Cursor Bugbot builds that map locally and gives it to the agent.
 
 You are not paying for another brain. You are giving the brain you already pay for better context.
 
@@ -67,7 +81,7 @@ That is the product.
 
 ## How It Works
 
-Repo Bugbot has two commands.
+Free Cursor Bugbot has two commands.
 
 ### 1. Build The Repo Graph
 
@@ -139,7 +153,7 @@ A normal diff review sees:
 changed: admin_router.py
 ```
 
-Repo Bugbot sees:
+Free Cursor Bugbot sees:
 
 ```text
 changed: admin_router.py
@@ -158,7 +172,7 @@ That is the difference.
 Private beta install:
 
 ```bash
-python3 -m pip install git+https://github.com/samthedataman/repo-bugbot.git
+python3 -m pip install git+https://github.com/samthedataman/free-cursor-bugbot.git
 ```
 
 When the repo becomes public, this will be installable without private GitHub access.
@@ -200,10 +214,10 @@ Return findings ordered by severity.
 
 ## Optional Git Hook
 
-Repo Bugbot can refresh automatically after checkout, pull, or rebase:
+Free Cursor Bugbot can refresh automatically after checkout, pull, or rebase:
 
 ```bash
-git config core.hooksPath /absolute/path/to/repo-bugbot/githooks
+git config core.hooksPath /absolute/path/to/free-cursor-bugbot/githooks
 ```
 
 Disable temporarily:

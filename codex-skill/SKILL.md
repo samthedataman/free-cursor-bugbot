@@ -3,13 +3,13 @@ name: repo-bugbot
 description: Free local Cursor-style Bugbot workflow for Codex and Claude Code. Use when auditing pull requests, checking merge risk, computing blast radius, or asking agents to review code changes with repository relationship context.
 ---
 
-# Repo Bugbot
+# Free Cursor Bugbot
 
 ## Goal
 
 Run a free local Cursor-style Bugbot review before merging PRs. The workflow combines deterministic repository graph indexing with Codex, Claude Code, or high-effort agent review so reviewers inspect not just changed files, but also likely affected callers, routes, tests, configs, workers, prompts, and public client surfaces.
 
-Repo Bugbot is independent and not affiliated with Cursor. The point is to give Codex and Claude Code the missing blast-radius context that a raw diff does not provide.
+Free Cursor Bugbot is independent and not affiliated with Cursor. The point is to give Codex and Claude Code the missing blast-radius context that a raw diff does not provide.
 
 ## Workflow
 

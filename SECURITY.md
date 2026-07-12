@@ -1,6 +1,6 @@
 # Security
 
-Repo Bugbot is local-first by default. It builds a SQLite graph and impact reports on the machine where it runs.
+Free Cursor Bugbot is local-first by default. It builds a SQLite graph and impact reports on the machine where it runs.
 
 ## Sensitive Data
 

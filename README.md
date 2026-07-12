@@ -1,295 +1,256 @@
 # Repo Bugbot
 
-Free, local, Cursor-style Bugbot for Codex and Claude Code.
+A free local Bugbot-style reviewer for Codex and Claude Code.
 
-Repo Bugbot turns a pull request into a **blast-radius map**. It does not only read the changed files. It builds a local SQLite graph of the repository, walks the relationships around the diff, classifies production risk, and generates focused review prompts for Codex, Claude Code, humans, or any other coding agent.
+Repo Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
 
-Think of it as a free local alternative to the kind of Bugbot workflow people want in Cursor, but designed to run against your own repo and hand structured review context to Codex or Claude Code.
+Instead of paying for another review bot, Repo Bugbot gives your existing agent the missing context:
 
-Repo Bugbot is not affiliated with Cursor. "Cursor-style" is descriptive: PR diff in, blast-radius-aware review context out.
+- what changed
+- what routes, env vars, tests, workers, and services are connected to it
+- what production risks the PR touches
+- what the agent should review first
 
-## Built For Codex And Claude Code
+Repo Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
 
-Repo Bugbot is not trying to replace your coding agent. It gives the agent better context.
+## What Cursor Bugbot Does
 
-Use it when you want Codex or Claude Code to review a PR with repository relationship context:
+Cursor Bugbot-style review is useful because it does not just say, "this line looks weird."
+
+The workflow is more like:
+
+1. Look at a pull request.
+2. Understand what changed.
+3. Guess what could break outside the changed lines.
+4. Leave review comments on likely bugs.
+
+That is the right idea. The problem is that many teams already pay for strong agents that can do the review if they are given the right context.
+
+## Why Repo Bugbot Exists
+
+Codex and Claude Code are already good at code review.
+
+What they usually lack is a clean map of the repository:
+
+- which frontend file calls which backend route
+- which route depends on which env var
+- which worker can retry and duplicate a write
+- which tests probably cover the touched code
+- which Render service owns a config variable
+- which public UI is actually mounted
+
+Repo Bugbot builds that map locally and gives it to the agent.
+
+You are not paying for another brain. You are giving the brain you already pay for better context.
+
+## Simple Version
+
+Run this inside the repo you want to review:
 
 ```bash
 repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
 repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
 ```
 
-Then ask your agent:
+Then ask Codex or Claude Code:
 
 ```text
-Audit this PR like a strict Bugbot pass.
-
-Read:
-- git diff origin/master...HEAD
-- .repo-bugbot/impact.md
-
-Only report material bugs. Focus on security, billing, worker retries, CRM writes,
-route/env mismatches, unreachable UI, and missing tests for risky behavior.
+Read .repo-bugbot/impact.md and git diff origin/master...HEAD.
+Review this PR like a strict Bugbot pass.
+Only report material bugs with file and line references.
+Focus on the impacted routes, env vars, workers, tests, CRM writes, billing flows,
+public UI, and deployment config.
+Do not report style-only issues.
 ```
 
-Codex is strong for applying fixes and running the local gate. Claude Code is strong for long-form code review and reasoning across large contexts. Repo Bugbot gives either one a ranked map of what the PR might break.
-
-## The Problem
-
-Most code review tools read a diff and comment on the lines that changed. That misses the bugs that actually break production:
-
-- a backend route changed but the frontend client contract was not updated
-- a worker retry path now double-sends an email, SMS, CRM note, or webhook
-- a Render env var was declared on the wrong service
-- a public `VITE_*` value is treated like a private billing/auth gate
-- a new React component exists but is never mounted
-- a Twilio, Stripe, Filevine, or outbound campaign write is not idempotent
-
-Repo Bugbot reviews the **system around the change**.
+That is the product.
 
 ## How It Works
 
-Repo Bugbot has four layers.
+Repo Bugbot has two commands.
 
-1. **Graph Indexer**
+### 1. Build The Repo Graph
 
-   Scans the repo into `.repo-bugbot/graph.sqlite`.
+```bash
+repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
+```
 
-   It indexes:
+This creates a local SQLite database:
 
-   - files
-   - Python and TypeScript symbols
-   - imports and local import edges
-   - FastAPI, decorator, and Express-style routes
-   - env vars referenced in code
-   - Render services and declared env vars from `render.yaml`
-   - likely test-to-source relationships
+```text
+.repo-bugbot/graph.sqlite
+```
 
-2. **Diff Impact Engine**
+The graph stores:
 
-   Compares `base...HEAD`, seeds the graph with changed files, and walks nearby nodes to find impacted callers, tests, routes, env vars, services, and public surfaces.
+- files
+- imports
+- Python and TypeScript symbols
+- FastAPI and Express-style routes
+- env vars used by code
+- Render services and env vars from `render.yaml`
+- likely test relationships
 
-3. **Risk Classifier**
+Example:
 
-   Detects risky categories such as:
+```text
+AdminPanel.tsx
+  imports -> adminApi.ts
 
-   - billing and provisioning
-   - external CRM writes
-   - config/env boundary changes
-   - worker, queue, retry, and campaign runtime changes
-   - route, webhook, auth, and onboarding changes
-   - public UI, widget, iframe, and mobile/desktop changes
+adminApi.ts
+  calls -> /api/v1/admin/newsletter/operations
 
-4. **Review Prompts**
+admin_router.py
+  registers -> GET /api/v1/admin/newsletter/operations
+  uses env -> RENDER_API_KEY
 
-   Generates strict prompts for focused review agents:
+render.yaml
+  declares service -> legalvoice-api
+  declares env -> RENDER_API_KEY
+```
 
-   - `security-billing-config`
-   - `runtime-data-integrations`
-   - `frontend-reachability-ux`
+### 2. Generate The PR Impact Report
 
-## Quickstart
+```bash
+repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
+```
 
-From the repository you want to review:
+This looks at the PR diff and asks:
+
+- what files changed?
+- what nearby files are connected?
+- what env vars or routes were touched?
+- what tests are probably relevant?
+- is this a billing, auth, webhook, CRM, worker, or public UI risk?
+
+The output is a markdown review brief:
+
+```text
+.repo-bugbot/impact.md
+```
+
+Give that file to Codex or Claude Code.
+
+## Why This Is Useful
+
+A normal diff review sees:
+
+```text
+changed: admin_router.py
+```
+
+Repo Bugbot sees:
+
+```text
+changed: admin_router.py
+also inspect: AdminPanel.tsx
+also inspect: adminApi.ts
+also inspect: render.yaml
+also inspect: RENDER_API_KEY
+also inspect: tests touching admin routes
+risk: route/auth/config boundary
+```
+
+That is the difference.
+
+## Install
+
+Private beta install:
 
 ```bash
 python3 -m pip install git+https://github.com/samthedataman/repo-bugbot.git
 ```
 
-Build the graph:
-
-```bash
-repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
-```
-
-Generate an impact report against `origin/master`:
-
-```bash
-repo-bugbot-impact \
-  --repo . \
-  --db .repo-bugbot/graph.sqlite \
-  --base origin/master \
-  --head HEAD \
-  --format markdown \
-  --out .repo-bugbot/impact.md
-```
-
-Open:
-
-```bash
-cat .repo-bugbot/impact.md
-```
-
-The markdown report includes:
-
-- changed files
-- detected risk categories
-- top impacted graph nodes
-- changed env vars, route strings, and symbols
-- focused agent prompts
+When the repo becomes public, this will be installable without private GitHub access.
 
 ## Use With Codex
 
-Run Repo Bugbot, then paste or reference `.repo-bugbot/impact.md` in Codex:
+Codex is good when you want review plus fixes.
+
+Prompt:
 
 ```text
 Use .repo-bugbot/impact.md and git diff origin/master...HEAD.
-Review this PR like Bugbot. Return only material findings with file and line.
-If a fix is straightforward, patch it and run the relevant tests.
+Find material bugs only.
+If the fix is straightforward, patch it.
+Then run the relevant tests.
 ```
 
-Suggested Codex workflow:
+Good Codex flow:
 
-1. Build graph.
-2. Generate impact report.
-3. Ask Codex for findings.
-4. Ask Codex to patch confirmed findings.
-5. Run the repo's pre-push gate.
+1. Generate `.repo-bugbot/impact.md`.
+2. Ask Codex to review.
+3. Approve real findings.
+4. Ask Codex to patch.
+5. Run the production gate.
 
 ## Use With Claude Code
 
-Run Repo Bugbot, then ask Claude Code:
+Claude Code is good for long-form reasoning across a large PR.
+
+Prompt:
 
 ```text
 Read .repo-bugbot/impact.md and git diff origin/master...HEAD.
 Act as a strict production code reviewer.
-Prioritize bugs caused by impacted routes, env vars, workers, tests, and external writes.
-Do not list style issues.
+Prioritize bugs caused by impacted routes, env vars, workers, tests, external writes,
+billing flows, and public UI.
+Return findings ordered by severity.
 ```
 
-Claude Code can use the report as a review brief instead of starting from a raw diff.
+## Optional Git Hook
 
-## Local SQLite Graph
-
-The graph database is local and disposable:
-
-```text
-.repo-bugbot/graph.sqlite
-```
-
-Example relationship map:
-
-```text
-AdminNewsletterPanel.tsx
-  imports_file -> adminApi.ts
-
-adminApi.ts
-  references_env -> VITE_API_BASE_URL
-
-admin_router.py
-  registers_route -> GET /api/v1/admin/newsletter/operations
-  references_env -> RENDER_API_KEY
-
-render.yaml
-  declares_service -> legalvoice-api
-  declares_env -> RENDER_API_KEY
-```
-
-When a PR touches `admin_router.py`, Repo Bugbot can point reviewers toward the frontend client, admin panel, Render env config, and tests that are likely affected.
-
-## Git Hook Mode
-
-Repo Bugbot can refresh the graph after checkouts, pulls, and rebases.
-
-Use the provided hook scripts from the repository you want to review:
+Repo Bugbot can refresh automatically after checkout, pull, or rebase:
 
 ```bash
 git config core.hooksPath /absolute/path/to/repo-bugbot/githooks
 ```
 
-Disable hooks temporarily:
+Disable temporarily:
 
 ```bash
 REPO_BUGBOT_HOOKS=0 git pull
 ```
 
-The hooks are intentionally non-blocking. They do not spawn paid agents, mutate code, or fail your Git command. They only refresh:
+The hook is non-blocking. It does not call an agent and does not mutate your code. It only refreshes local files under `.repo-bugbot/`.
 
-```text
-.repo-bugbot/graph.sqlite
-.repo-bugbot/impact.md
-.repo-bugbot/impact.json
-.repo-bugbot/last-hook.log
-```
+## What Is Free
 
-## Agent Workflow
-
-Recommended review flow:
-
-```bash
-repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
-repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
-```
-
-Then give `.repo-bugbot/impact.md` to Codex, Claude Code, or three focused reviewers:
-
-1. Security, billing, config
-2. Runtime, workers, integrations
-3. Frontend reachability and UX
-
-Each reviewer should return only material issues with file and line references.
-
-## SaaS Tier Roadmap
-
-Repo Bugbot is currently a free local private beta. The hosted SaaS roadmap is:
-
-### Local
-
-Free for individual developers and private beta testers.
+The local version is free:
 
 - local SQLite graph
 - local impact reports
-- local Git hook refresh
-- no code leaves your machine
-- Codex and Claude Code prompt generation
+- local Git hooks
+- Codex prompt
+- Claude Code prompt
+- no hosted service required
+- no source upload required
 
-### Pro
+## Possible SaaS Later
 
-For solo builders and small teams.
+The local tool should stay useful on its own.
 
-- GitHub PR comment bot
-- saved impact reports per PR
-- risk badges on pull requests
-- review prompt export for Codex, Claude Code, Cursor-style workflows, or internal agents
-- configurable base branches
+A paid SaaS version could add:
 
-### Team
+- GitHub PR comments
+- hosted dashboards
+- risk badges
+- Slack alerts
+- org-wide rules
+- saved review history
+- self-hosted enterprise deployment
 
-For engineering teams shipping production systems.
+But the core idea is simple: if you already pay for Codex or Claude Code, you should be able to run a strong Bugbot-style review locally.
 
-- organization dashboard
-- repo risk history
-- required-review policies by risk category
-- CODEOWNERS-style routing by impacted surface
-- Slack alerts for high-risk PRs
-- merge-readiness checklist
-
-### Enterprise
-
-For regulated or high-scale teams.
-
-- self-hosted or VPC deployment
-- SSO/SAML
-- audit logs
-- custom risk rules
-- internal model routing
-- private source retention controls
-- compliance exports
-
-## Security Model
-
-Repo Bugbot is designed to be local-first:
-
-- source code stays on the machine where the graph is built
-- `.repo-bugbot/graph.sqlite` is a generated local artifact
-- generated reports should be treated as internal engineering artifacts
-- public frontend env vars are considered public and never trusted as auth
-- Render/env changes are treated as production-risk changes
-
-Do not commit `.repo-bugbot/` artifacts unless your team explicitly wants to store reports.
-
-## Current Status
+## Status
 
 Private beta.
 
-This repo is intentionally private while the framework, docs, and product workflow harden. Before making it public, add a public license, CI, packaged releases, sanitized example reports, and a clear public disclaimer that this is an independent Cursor-style tool rather than an official Cursor product.
+Before public release, this needs:
+
+- a public license
+- CI
+- better examples
+- package releases
+- more language/framework detection
+- clear trademark disclaimer

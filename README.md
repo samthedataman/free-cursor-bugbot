@@ -14,14 +14,15 @@ Instead of paying for another review bot, Free Cursor Bugbot gives your existing
 Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
 
 ```mermaid
-flowchart LR
-    PR["Pull Request diff"] --> Index["Build local repo graph"]
-    Repo["Your repo files"] --> Index
+flowchart TD
+    Repo["Your repo files"] --> Index["1. Build local repo graph"]
     Index --> DB[("SQLite graph<br/>.repo-bugbot/graph.sqlite")]
-    DB --> Impact["Impact report<br/>.repo-bugbot/impact.md"]
-    PR --> Impact
-    Impact --> Codex["Codex review"]
-    Impact --> Claude["Claude Code review"]
+    PR["Pull request diff"] --> Impact["2. Generate impact report"]
+    DB --> Impact
+    Impact --> Context["Blast-radius context<br/>routes, env vars, tests, workers, services"]
+    Context --> Choice{"Use the agent<br/>you already pay for"}
+    Choice --> Codex["Codex"]
+    Choice --> Claude["Claude Code"]
     Codex --> Findings["Material bugs<br/>with file + line"]
     Claude --> Findings
     Findings --> Fix["Patch, test, merge"]
@@ -201,6 +202,16 @@ Good Codex flow:
 ## Use With Claude Code
 
 Claude Code is good for long-form reasoning across a large PR.
+
+Yes, this works with Claude Code. There is no special integration required. Free Cursor Bugbot writes normal local files into the same checkout:
+
+```text
+.repo-bugbot/graph.sqlite
+.repo-bugbot/impact.md
+.repo-bugbot/impact.json
+```
+
+Claude Code can read `.repo-bugbot/impact.md` and `git diff origin/master...HEAD` just like any other repo file.
 
 Prompt:
 

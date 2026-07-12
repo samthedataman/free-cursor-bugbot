@@ -13,6 +13,70 @@ Instead of paying for another review bot, Free Cursor Bugbot gives your existing
 
 Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
 
+## Start Here
+
+Clone the tool once:
+
+```bash
+git clone https://github.com/samthedataman/free-cursor-bugbot.git
+```
+
+Then go to the app repo you want to review:
+
+```bash
+cd your-app-repo
+python3 -m pip install -e /path/to/free-cursor-bugbot
+repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
+repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
+```
+
+Then paste this into Codex or Claude Code:
+
+```text
+Read .repo-bugbot/impact.md and git diff origin/master...HEAD.
+
+Review this PR like a strict Bugbot pass. Only report material bugs with file and line references.
+
+Focus on:
+- impacted routes
+- env vars
+- workers/retries
+- external writes
+- billing/auth
+- public UI
+- missing tests for risky behavior
+
+Do not report style-only issues.
+```
+
+That is the whole local workflow.
+
+## How Many Agents Does It Spin Up?
+
+Zero by default.
+
+Free Cursor Bugbot does **not** automatically launch Codex, Claude Code, or paid agents. The CLI only creates local files:
+
+```text
+.repo-bugbot/graph.sqlite
+.repo-bugbot/impact.md
+.repo-bugbot/impact.json
+```
+
+The impact report includes **three suggested review lanes**:
+
+1. Security, billing, and config
+2. Runtime, data, and integrations
+3. Frontend reachability and UX
+
+You can use it three ways:
+
+- **One agent:** give all of `.repo-bugbot/impact.md` to Codex or Claude Code.
+- **Three agents:** split the three suggested review lanes across three Codex/Claude sessions.
+- **Human review:** give the report to engineers as a PR review brief.
+
+The simplest setup is one agent. The "three agents" path is optional when you want a heavier review.
+
 ```mermaid
 flowchart TD
     Repo["Your repo files"] --> Index["1. Build local repo graph"]
@@ -20,7 +84,8 @@ flowchart TD
     PR["Pull request diff"] --> Impact["2. Generate impact report"]
     DB --> Impact
     Impact --> Context["Blast-radius context<br/>routes, env vars, tests, workers, services"]
-    Context --> Choice{"Use the agent<br/>you already pay for"}
+    Context --> Lanes["Suggested lanes<br/>security, runtime, frontend"]
+    Lanes --> Choice{"Use one agent<br/>or split into three"}
     Choice --> Codex["Codex"]
     Choice --> Claude["Claude Code"]
     Codex --> Findings["Material bugs<br/>with file + line"]
@@ -57,28 +122,6 @@ What they usually lack is a clean map of the repository:
 Free Cursor Bugbot builds that map locally and gives it to the agent.
 
 You are not paying for another brain. You are giving the brain you already pay for better context.
-
-## Simple Version
-
-Run this inside the repo you want to review:
-
-```bash
-repo-bugbot-index --repo . --db .repo-bugbot/graph.sqlite
-repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master --out .repo-bugbot/impact.md
-```
-
-Then ask Codex or Claude Code:
-
-```text
-Read .repo-bugbot/impact.md and git diff origin/master...HEAD.
-Review this PR like a strict Bugbot pass.
-Only report material bugs with file and line references.
-Focus on the impacted routes, env vars, workers, tests, CRM writes, billing flows,
-public UI, and deployment config.
-Do not report style-only issues.
-```
-
-That is the product.
 
 ## How It Works
 

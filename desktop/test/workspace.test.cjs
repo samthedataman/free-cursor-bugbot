@@ -75,11 +75,12 @@ test(
       JSON.stringify({ checkers }),
     );
     const appDir = path.resolve(__dirname, "..");
+    const packagedExecutable = process.env.BUGBOT_TEST_PACKAGED_APP;
     const application = await _electron.launch({
-      executablePath: require("electron"),
+      executablePath: packagedExecutable || require("electron"),
       cwd: appDir,
       args: [
-        appDir,
+        ...(packagedExecutable ? [] : [appDir]),
         "--repo",
         repo,
         "--user-data-dir=" + path.join(tmp, "profile"),
@@ -87,6 +88,10 @@ test(
       env: { ...process.env, REPO_BUGBOT_HOME: home },
     });
     t.after(() => application.close());
+    assert.equal(
+      await application.evaluate(({ app }) => app.isPackaged),
+      Boolean(packagedExecutable),
+    );
     const page = await application.firstWindow();
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));

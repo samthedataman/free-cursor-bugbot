@@ -40,7 +40,12 @@ try {
             identity: "-",
             identityValidation: false,
             preAutoEntitlements: false,
-            optionsForFile: () => ({ timestamp: "none" }),
+            // Ad-hoc signatures have no team ID for macOS hardened library validation.
+            optionsForFile: () => ({
+              timestamp: "none",
+              hardenedRuntime: false,
+              entitlements: path.join(root, "entitlements.mac.plist"),
+            }),
           }
         : undefined,
     extraResource: [backend],

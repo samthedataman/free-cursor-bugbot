@@ -70,7 +70,7 @@ function stop(proc) {
 async function request(command, args = {}) {
   const [exe, ...prefix] = interpreter();
   return new Promise((resolve, reject) => {
-    const proc = spawn(exe, [...prefix, "-I", bridge, command], {
+    const proc = spawn(exe, [...prefix, "-I", "-B", bridge, command], {
       cwd: path.dirname(bridge),
       detached: process.platform !== "win32",
       windowsHide: true,

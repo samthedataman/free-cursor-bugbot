@@ -174,6 +174,10 @@ test(
       page.getByRole("heading", { name: "No commits yet" }),
     ).toBeVisible();
     await expect(page.locator("#run-btn")).toBeDisabled();
+    if (packagedExecutable && process.platform === "darwin") {
+      const bundle = path.resolve(path.dirname(packagedExecutable), "../..");
+      execFileSync("codesign", ["--verify", "--deep", "--strict", bundle]);
+    }
     assert.deepEqual(errors, []);
   },
 );

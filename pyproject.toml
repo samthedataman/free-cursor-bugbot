@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "free-cursor-bugbot"
-version = "0.1.0"
-description = "Free local Cursor-style Bugbot for Codex and Claude Code."
+version = "0.2.0"
+description = "Local multi-model Git reviews and repository impact analysis."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -23,6 +23,7 @@ classifiers = [
 dependencies = []
 
 [project.scripts]
+repo-bugbot-review = "repo_bugbot.review:main"
 repo-bugbot-index = "repo_bugbot.index_repo_graph:main"
 repo-bugbot-impact = "repo_bugbot.diff_impact:main"
 

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'"
+    />
+    <title>Repo Bugbot</title>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="common.js"></script>
+    <script defer src="graph.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="brand-icon" data-icon="bug"></span>Repo Bugbot
+      </div>
+      <button id="open" class="repo-button" title="Open a Git repository">
+        <span data-icon="folder"></span
+        ><span id="repo-name">Open repository</span
+        ><span data-icon="chevrons"></span>
+      </button>
+      <div class="spacer"></div>
+      <button id="settings-btn" class="secondary">
+        <span data-icon="sliders"></span>Checkers
+        <span class="count" id="checker-count">…</span>
+      </button>
+      <button id="run-btn" class="primary" disabled>
+        <span data-icon="play"></span><span id="run-label">Run review</span>
+      </button>
+    </header>
+    <div class="shell">
+      <aside class="history-pane">
+        <div class="history-head">
+          <h2>Commit history</h2>
+          <button
+            class="icon-btn"
+            id="refresh"
+            title="Refresh history"
+            aria-label="Refresh history"
+          >
+            <span data-icon="refresh"></span>
+          </button>
+        </div>
+        <label class="branch"
+          ><span data-icon="branch"></span
+          ><select id="branch" aria-label="Branch">
+            <option>HEAD</option>
+          </select></label
+        >
+        <label class="search"
+          ><span data-icon="search"></span
+          ><input
+            id="search"
+            type="search"
+            placeholder="Filter commits"
+            aria-label="Filter commits"
+        /></label>
+        <div id="commits" class="commits"></div>
+        <div class="history-foot">
+          <span data-icon="git"></span
+          ><span id="history-status">No repository open</span>
+        </div>
+      </aside>
+      <main id="main" tabindex="-1"></main>
+    </div>
+    <dialog id="settings-dialog">
+      <form id="settings-form">
+        <div class="dialog-head">
+          <div>
+            <h2>Model checkers</h2>
+            <p>
+              Each checker receives the same committed diff and its own review
+              focus.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="icon-btn"
+            id="close-settings"
+            aria-label="Close settings"
+          >
+            <span data-icon="x"></span>
+          </button>
+        </div>
+        <div id="checker-editors"></div>
+        <div class="dialog-foot">
+          <button type="button" id="add-checker" class="secondary">
+            <span data-icon="plus"></span>Add checker</button
+          ><span class="error-message" id="settings-error" role="alert"></span
+          ><button type="submit" class="primary">Save checkers</button>
+        </div>
+      </form>
+    </dialog>
+    <div id="notice" role="status" hidden></div>
+  </body>
+</html>

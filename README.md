@@ -1,6 +1,6 @@
 # Free Cursor Bugbot
 
-A free local Bugbot-style reviewer for Codex and Claude Code.
+Explore Git changes locally and run independent reviews with the models you choose.
 
 Free Cursor Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
 
@@ -13,12 +13,56 @@ Instead of paying for another review bot, Free Cursor Bugbot gives your existing
 
 Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
 
-## Start Here
+## Desktop app
+
+Open a local Git folder in **Repo Bugbot**. Select a branch and commit to see its changed files, line diffs, risk signals, and issue graph. Click a node to inspect the reason for each connection. The **Reviews** tab keeps the findings, model attribution, and errors for that exact comparison.
+
+![Repo Bugbot showing a sample checkout commit and its issue graph](docs/desktop.png)
+
+Use Git, Python 3.10 or newer, and Node.js 22.12 or newer. From a clone of this repository:
+
+```sh
+cd desktop
+npm ci
+npm start
+```
+
+Use `npm start -- --repo /path/to/project` to open a specific repository. `npm run package` builds a desktop application for the current OS and architecture in `desktop/out/`. Packaged apps include the Python backend and use Git and Python from the machine. Set `REPO_BUGBOT_PYTHON` to an absolute interpreter path if necessary.
+
+The graph connects commits with changed files, static risk signals, issue or PR references, and findings reported by the selected review. It also shows supported relative imports and likely tests by file name. For a referenced issue, it looks back through up to 100 earlier commits for the same reference. **Load GitHub details** optionally uses your signed-in GitHub CLI to retrieve its title, state, and references in its description. You can browse commits and run local models offline.
+
+## Run multiple model checkers
+
+Open **Checkers** to choose each reviewer's provider, model ID, name, and focus. A review runs up to three checkers concurrently by default. You can configure one to twelve, including multiple models from one provider. The initial selection uses Codex CLI, Claude Code CLI, and Ollama. Both CLI providers use their existing login. If a desktop launch cannot find a CLI, set `REPO_BUGBOT_CODEX_BIN` or `REPO_BUGBOT_CLAUDE_BIN` to its executable path. Ollama uses a model installed locally.
+
+| Provider | Connection |
+| --- | --- |
+| Codex CLI, Claude Code CLI | Installed CLI with an active login |
+| Ollama, LM Studio | Local model server |
+| OpenAI, Google Gemini, OpenRouter | Hosted API with a configurable model ID |
+| Anthropic | Messages API |
+| Other OpenAI-compatible servers | Choose **OpenAI / compatible** and set the API base URL |
+
+Start a review explicitly to send the committed diff and its context to the selected providers. API credentials come from environment variables available to the app or CLI. Enter the variable **name** in the settings. Graph browsing and Git hooks run locally.
+
+For shell or CI runs, install the Python package in a virtual environment with `python -m pip install .`, then create and edit a checker configuration:
+
+```sh
+repo-bugbot-review --init-config /tmp/bugbot-checkers.json
+repo-bugbot-review --repo /path/to/project --base origin/main --head HEAD \
+  --config /tmp/bugbot-checkers.json --parallel 3
+```
+
+Use the actual target branch for `--base`. Without it, the review compares a commit to its first parent, or to an empty tree for the initial commit. The desktop uses this single-commit comparison. All checkers receive the same Git diff and their own focus. The tool records per-checker results and combines matching findings by path, line, and title. A finding is a model's assessment and includes its source checker.
+
+The command prints JSON. Exit **0** means a complete review with no findings, **1** means a complete review with findings, and **2** means incomplete coverage, a provider error, or an invalid configuration. The model input includes up to 60 KB of patch text and 300 changed file summaries. An exceeded limit marks the review incomplete. Local settings and receipts are stored under `~/.repo-bugbot/`, configurable with `REPO_BUGBOT_HOME`. Each receipt is keyed to the repository, base, and head. The desktop and CLI share these settings.
+
+## Manual review quickstart
 
 Clone the tool once:
 
 ```bash
-git clone https://github.com/<owner>/free-cursor-bugbot.git
+git clone https://github.com/samthedataman/free-cursor-bugbot.git
 ```
 
 Then go to the app repo you want to review:
@@ -51,11 +95,11 @@ Do not report style-only issues.
 
 That is the whole local workflow.
 
-## How Many Agents Does It Spin Up?
+## How many agents does the manual workflow start?
 
 Zero by default.
 
-Free Cursor Bugbot does **not** automatically launch Codex, Claude Code, or paid agents. The CLI only creates local files:
+The index and impact commands write these local files. Model calls start when you run `repo-bugbot-review` or click **Run review** in the desktop app.
 
 ```text
 .repo-bugbot/graph.sqlite
@@ -125,7 +169,7 @@ You are not paying for another brain. You are giving the brain you already pay f
 
 ## How It Works
 
-Free Cursor Bugbot has two commands.
+The manual workflow uses two commands.
 
 ### 1. Build The Repo Graph
 
@@ -214,10 +258,8 @@ That is the difference.
 ## Install From GitHub
 
 ```bash
-python3 -m pip install git+https://github.com/<owner>/free-cursor-bugbot.git
+python3 -m pip install git+https://github.com/samthedataman/free-cursor-bugbot.git
 ```
-
-Replace `<owner>` with the GitHub owner or organization where this repo is hosted.
 
 ## Use With Codex
 
@@ -303,7 +345,6 @@ A paid SaaS version could add:
 - risk badges
 - Slack alerts
 - org-wide rules
-- saved review history
 - self-hosted enterprise deployment
 
 But the core idea is simple: if you already pay for Codex or Claude Code, you should be able to run a strong Bugbot-style review locally.
@@ -314,7 +355,6 @@ Public alpha.
 
 Still needed:
 
-- CI
 - better examples
-- package releases
+- PyPI publication
 - more language/framework detection

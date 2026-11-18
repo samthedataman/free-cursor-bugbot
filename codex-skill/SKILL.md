@@ -33,6 +33,10 @@ repo-bugbot-impact --repo . --db .repo-bugbot/graph.sqlite --base origin/master 
    - frontend reachability/UX
 6. Merge only after material findings are fixed or explicitly accepted and the repo's production gate passes.
 
+## Configured checkers and desktop
+
+Run `repo-bugbot-review --repo . --base origin/main --config /path/to/checkers.json` for a configured multi-model review. Use the actual target branch. The command returns a JSON receipt with checker attribution and completion status. The desktop app exposes the same single-commit reviews alongside file diffs, risk signals, and issue relationships.
+
 ## Codex / Claude Code Prompt
 
 ```text

@@ -1,0 +1,22 @@
+{
+  "name": "repo-bugbot-desktop",
+  "productName": "Repo Bugbot",
+  "version": "0.2.0",
+  "description": "Explore commits, risks, issues, and model reviews in a local Git repository.",
+  "license": "MIT",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "package": "node package.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "45.3.4",
+    "playwright": "1.65.1"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

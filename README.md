@@ -1,35 +1,55 @@
 # Free Cursor Bugbot
 
-Explore Git changes locally and run independent reviews with the models you choose.
-
-Free Cursor Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
-
-Instead of paying for another review bot, Free Cursor Bugbot gives your existing agent the missing context:
-
-- what changed
-- what routes, env vars, tests, workers, and services are connected to it
-- what production risks the PR touches
-- what the agent should review first
-
-Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
+Explore Git changes locally and run independent reviews with the models you choose. [See the screenshots](#screenshots)
 
 ## Desktop app
 
-Open a local Git folder in **Repo Bugbot**. Select a branch and commit to see its changed files, line diffs, risk signals, and issue graph. Click a node to inspect the reason for each connection. The **Reviews** tab keeps the findings, model attribution, and errors for that exact comparison.
+### Quick start
 
-![Repo Bugbot showing a sample checkout commit and its issue graph](docs/desktop.png)
-
-Use Git, Python 3.10 or newer, and Node.js 22.12 or newer. From a clone of this repository:
+With Git, Python 3.10+, and Node.js 22.12+ installed, run these commands from the directory where you keep your projects.
 
 ```sh
-cd desktop
+git clone https://github.com/samthedataman/free-cursor-bugbot.git
+cd free-cursor-bugbot/desktop
 npm ci
-npm start
+npm start -- --repo ..
 ```
 
-Use `npm start -- --repo /path/to/project` to open a specific repository. `npm run package` builds a desktop application for the current OS and architecture in `desktop/out/`. Packaged apps include the Python backend and use Git and Python from the machine. Set `REPO_BUGBOT_PYTHON` to an absolute interpreter path if necessary.
+This opens the cloned Bugbot repository. Select a commit in the left sidebar to explore it. To open your own project, click the folder button at the top left. On later launches, run `npm start` from the `desktop` directory, or pass the path to the repository you want to open.
 
-The graph connects commits with changed files, static risk signals, issue or PR references, and findings reported by the selected review. It also shows supported relative imports and likely tests by file name. For a referenced issue, it looks back through up to 100 earlier commits for the same reference. **Load GitHub details** optionally uses your signed-in GitHub CLI to retrieve its title, state, and references in its description. You can browse commits and run local models offline.
+```sh
+npm start -- --repo /path/to/your/repository
+```
+
+An Apple Silicon build uses Git and Python 3.10+ from your Mac. [Mac download on GitHub Releases](https://github.com/samthedataman/free-cursor-bugbot/releases/latest)
+
+From `desktop/`, `npm run package` builds an app for the current OS and architecture in `desktop/out/`. Set `REPO_BUGBOT_PYTHON` to an absolute interpreter path if the app needs a specific Python installation.
+
+## Screenshots
+
+These views follow a change to checkout billing in a sample repository.
+
+**Commit history and issue graph.** Select a commit to see the files it changed, the issues it references, and earlier commits that mention those same issues. Select a node to inspect its connections.
+
+![Commit history beside a graph connecting a checkout change to billing files, a test, a risk signal, and the references #42 and #18](docs/desktop.png)
+
+The graph also shows supported relative imports and likely tests by file name. For an issue or PR reference, it checks up to 100 earlier commits for the same reference. **Load GitHub details** uses your signed-in GitHub CLI to retrieve the title, state, and references from its description. You can browse commits and run local models offline.
+
+**Changes.** The file list and line-numbered diff show exactly where the conversion from dollars to cents changed.
+
+![Changes tab showing the removed and added lines in the billing function](docs/desktop-changes.png)
+
+**Risks.** The billing rule matched two files. **View connections** opens them in the graph.
+
+![Risks tab showing a billing risk signal and the two files that matched it](docs/desktop-risks.png)
+
+**Checkers.** Give each reviewer its own provider, model, and focus. This setup uses Codex CLI, Claude Code CLI, and Ollama.
+
+![Model checker settings with separate providers, model choices, and review instructions for three checkers](docs/desktop-checkers.png)
+
+**Reviews.** Each saved run shows which checkers completed and how many findings each returned. This run used three local models.
+
+![Review results for Llama 3.2, DeepSeek Coder, and Qwen 2.5, showing two findings from each checker](docs/desktop-reviews.png)
 
 ## Run multiple model checkers
 
@@ -45,7 +65,16 @@ Open **Checkers** to choose each reviewer's provider, model ID, name, and focus.
 
 Start a review explicitly to send the committed diff and its context to the selected providers. API credentials come from environment variables available to the app or CLI. Enter the variable **name** in the settings. Graph browsing and Git hooks run locally.
 
-For shell or CI runs, install the Python package in a virtual environment with `python -m pip install .`, then create and edit a checker configuration:
+To start the CLI on macOS or Linux, run these commands from the root of the cloned repository.
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+repo-bugbot-review --help
+```
+
+For a shell or CI review, create a checker configuration, choose your models in that file, and run the review.
 
 ```sh
 repo-bugbot-review --init-config /tmp/bugbot-checkers.json
@@ -151,6 +180,17 @@ The workflow is more like:
 That is the right idea. The problem is that many teams already pay for strong agents that can do the review if they are given the right context.
 
 ## Why Free Cursor Bugbot Exists
+
+Free Cursor Bugbot is for developers who like the idea of Cursor Bugbot, but already pay for coding agents like Codex or Claude Code.
+
+Instead of paying for another review bot, Free Cursor Bugbot gives your existing agent the missing context:
+
+- what changed
+- what routes, env vars, tests, workers, and services are connected to it
+- what production risks the PR touches
+- what the agent should review first
+
+Free Cursor Bugbot is independent and not affiliated with Cursor. "Bugbot-style" means PR diff in, blast-radius-aware review context out.
 
 Codex and Claude Code are already good at code review.
 
